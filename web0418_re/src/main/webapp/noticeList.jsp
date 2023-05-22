@@ -67,6 +67,30 @@
 		ResultSet rs2 = stmt2.executeQuery();
 		
 		
+		
+
+		
+		//페이징
+		
+		int totalRow = 0;
+		String totalRowSql = "select count(*) from notice";
+		PreparedStatement totalRowstmt = conn.prepareStatement(totalRowSql);
+		ResultSet totalRowRs = totalRowstmt.executeQuery();
+			if(totalRowRs.next()){
+				
+				totalRow = totalRowRs.getInt(1); //=("count(*)") //lastPage 는 rowPerPage로 정해진다
+			}
+		
+		//마지막 행 구하기
+
+		int beginRow = (currentPage-1)*rowPerPage +1;
+		int endRow = beginRow + (rowPerPage-1); //endrow는 무엇을 기준으로?
+				
+			if(endRow > totalRow){
+				
+				endRow = totalRow;
+			}
+		
 %>
 
 <!DOCTYPE html>
@@ -145,32 +169,89 @@
 		
 	</table>
 	
-	
-	
 	<%
-		if(currentPage >1 ){
-	%>
-			<a href="./noticeList.jsp?currentPage=<%=currentPage-1%>">이전</a>
-	<%		
+	
+	//페이징 1234 네비게이션
+	
+	
+	/*	cp	minpage-maxpage
+	
+		1		1-10
+		2		1-10
+		10		1-10
+		
+		11		11-20
+		12		11-20
+		20		11-20
+		
+		(cp-1) / pagePerPage * pagePerPage + 1 --> minPage
+		minPage+(pagePerPage-1) --> maxPage
+		maxPage < lastPage --> maxPage = lastPage
+		
+		
+		___________________________________________________
+		
+		ex) 1-10 
+			1			(page)
 			
+			11-20
+			1 2
+			
+			21-30
+			3page
 		
-		}
-		int totalRow = 500; //SQL에서 SELECT COUNT(*) FROM notice; 
-		int lastPage = totalRow / rowPerPage;
-		if(totalRow % rowPerPage != 0){
-			lastPage = lastPage + 1;
-		}
-	%>
-			<%=currentPage %>
-	<%	
-		if(currentPage < lastPage){
-	%>
 		
-	<a href="./noticeList.jsp?currentPage=<%=currentPage+1%>">다음</a>
-	<%
-		}
+		
+		
+	*/
+	//마지막 페이지가 10으로 떨어지지 않으니까
+	
+	int lastPage = totalRow / rowPerPage;
+	if(totalRow % rowPerPage != 0){
+		lastPage = lastPage +1; //10으로 나누어 떨어지지 않는 나머지 게시글을 위한 1 페이지 생성
+	}
+	// 
+	int pagePerPage = 10;
+	
+	int minPage = ((currentPage-1)/pagePerPage) * pagePerPage + 1;
+	
+	
+	int maxPage = minPage +(pagePerPage -1);
+	if(maxPage > lastPage){
+		maxPage = lastPage;
+	}
 	
 	%>
+	
+		<div class="container text-center">
+	<% 
+		      if(minPage > 1) {
+						%>
+						   <a href="<%=request.getContextPath()%>/noticeList.jsp?currentPage=<%=minPage-pagePerPage%>">이전</a>   
+						<%
+						}
+						
+						for(int i = minPage; i<=maxPage; i=i+1) {
+						   if(i == currentPage) {
+						%>
+						      <span><%=i%></span>&nbsp;
+						<%         
+						   } else {      
+						%>
+						      <a href="<%=request.getContextPath()%>/noticeList.jsp?currentPage=<%=i%>"><%=i%></a>&nbsp;   
+						<%   
+						   }
+						}
+						
+						if(maxPage != lastPage) {
+						%>
+						   <!--  maxPage + 1 -->
+						   <a href="<%=request.getContextPath()%>/noticeList.jsp?currentPage=<%=minPage+pagePerPage%>">다음</a>
+						<%
+					 	      }
+	
+						%>
+		</div>				
 	
 	
 </body>
