@@ -119,7 +119,7 @@
                 <div class="row gx-4 gx-lg-5 justify-content-center">
 				<div class="col-lg-10">	
 					<h1><%=y%>년 <%=m%>월 <%=d%>일 스케줄 목록</h1>
-					<table>
+					<table class=" table table-hover" >
 						<tr>
 							<th>time</th>
 							<th>memo</th>
